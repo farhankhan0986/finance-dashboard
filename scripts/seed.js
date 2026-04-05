@@ -19,7 +19,6 @@ async function seed() {
     const analystPass = await bcrypt.hash('Analyst@123', 10);
     const viewerPass = await bcrypt.hash('Viewer@123', 10);
 
-    // Using upsert instead of ON CONFLICT DO NOTHING to ensure we get IDs back easily or ignore.
     const usersToInsert = [
       { name: 'Admin User', email: 'admin@demo.com', password_hash: adminPass, role: 'admin', status: 'active' },
       { name: 'Analyst User', email: 'analyst@demo.com', password_hash: analystPass, role: 'analyst', status: 'active' },
@@ -28,8 +27,6 @@ async function seed() {
 
     console.log('Inserting users...');
     
-    // We do this individually, or check if they exist first, to avoid failing when email already exists
-    // Simple approach: try inserted. If error code 23505 (unique violation), we can select them.
     let users = [];
     const { data: existingUsers } = await supabase.from('users').select('*');
     

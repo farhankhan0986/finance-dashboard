@@ -83,14 +83,14 @@ export default function Login() {
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-            {loading ? 'Logging in...' : 'Sign In'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <p style={{ marginTop: 14, fontSize: 13, color: 'var(--text-muted)' }}>
           Don&apos;t have an account?{' '}
           <Link href="/signup" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-            Sign Up
+            Create Account
           </Link>
         </p>
       </section>

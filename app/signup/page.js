@@ -97,14 +97,14 @@ export default function Signup() {
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
         <p style={{ marginTop: 14, fontSize: 13, color: 'var(--text-muted)' }}>
           Already have an account?{' '}
           <Link href="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-            Log In
+            Sign In
           </Link>
         </p>
       </section>

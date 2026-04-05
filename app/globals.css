@@ -40,7 +40,6 @@ textarea {
   font: inherit;
 }
 
-/* Layout */
 .page-wrap {
   max-width: 1120px;
   margin: 0 auto;
@@ -61,7 +60,6 @@ textarea {
   color: var(--text);
 }
 
-/* Simple grid helpers */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -80,7 +78,6 @@ textarea {
   gap: 12px;
 }
 
-/* Cards */
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -100,7 +97,6 @@ textarea {
   color: var(--text);
 }
 
-/* Forms */
 .label {
   display: block;
   margin-bottom: 6px;
@@ -126,7 +122,6 @@ textarea {
   border-color: var(--primary);
 }
 
-/* Buttons */
 .btn {
   border: 1px solid var(--border);
   background: #fff;
@@ -162,7 +157,6 @@ textarea {
   color: red;
 }
 
-/* Table */
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -197,7 +191,6 @@ textarea {
   font-size: 13px;
 }
 
-/* Status / alerts */
 .badge {
   display: inline-block;
   border: 1px solid var(--border);
@@ -238,7 +231,6 @@ textarea {
   background: #f0fdf4;
 }
 
-/* Utility */
 .row {
   display: flex;
   gap: 10px;
