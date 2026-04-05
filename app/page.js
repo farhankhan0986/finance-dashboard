@@ -22,7 +22,7 @@ export default function Home() {
             </p>
 
             <h1 style={{ margin: '14px 0 0', fontSize: 36, lineHeight: 1.2, fontWeight: 700, color: 'var(--text)' }}>
-              Finance Dashboard Backend
+              Finance Dashboard
             </h1>
 
             <p style={{ marginTop: 14, marginBottom: 0, color: 'var(--text-muted)', maxWidth: 560, fontSize: 15 }}>
