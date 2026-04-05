@@ -1,4 +1,3 @@
--- Function for Dashboard Summary (Income, Expenses, Net)
 CREATE OR REPLACE FUNCTION get_dashboard_summary(p_user_id UUID, p_role TEXT)
 RETURNS TABLE (total_income numeric, total_expenses numeric)
 LANGUAGE plpgsql
@@ -14,7 +13,6 @@ BEGIN
 END;
 $$;
 
--- Function for Dashboard Trends (Monthly breakdown)
 CREATE OR REPLACE FUNCTION get_dashboard_trends(p_user_id UUID, p_role TEXT)
 RETURNS TABLE (month text, income numeric, expense numeric)
 LANGUAGE plpgsql

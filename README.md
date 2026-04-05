@@ -2,6 +2,9 @@
 
 This is a full-stack Next.js (App Router, JavaScript) + Supabase project for a complete finance dashboard. It provides a secure, role-based backend architecture layered with a modern UI for generating rapid financial insights, updating metadata, and tracking transaction flow.
 
+- **Live Demo**: [finance-dashboard-gamma-orpin.vercel.app](https://finance-dashboard-gamma-orpin.vercel.app/)
+- **Postman API Docs**: [View Collection](https://documenter.getpostman.com/view/47279076/2sBXiqEUUZ)
+
 ## Core Stack
 - **Frontend**: Next.js (App Router), React, TailwindCSS
 - **Backend / API**: Next.js API Routes, Node.js

@@ -54,7 +54,6 @@ async function seed() {
       if (existingRecords && existingRecords.length > 0) {
         console.log('Records already exist, skipping record seeding.');
       } else {
-        // Calculate dates locally
         const today = new Date();
         const daysAgo = (days) => { const d = new Date(); d.setDate(today.getDate() - days); return d.toISOString(); };
 
