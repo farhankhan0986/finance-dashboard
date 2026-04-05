@@ -16,15 +16,16 @@ export default function Signup() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), password })
       });
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || 'Signup failed');
       }
@@ -33,76 +34,80 @@ export default function Signup() {
       localStorage.setItem('user', JSON.stringify(data.data.user));
       router.push('/dashboard');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 font-sans">
-      <div className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md border border-gray-100">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create Account</h1>
-          <p className="text-sm text-gray-500 mt-2 font-medium">Join us to manage your finances seamlessly</p>
+    <main className="page-wrap" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+      <section className="section" style={{ width: '100%', maxWidth: 420 }}>
+        <div style={{ marginBottom: 16 }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>
+            Create Account
+          </h1>
+          <p style={{ marginTop: 6, fontSize: 13, color: 'var(--text-muted)' }}>
+            Sign up to access the finance dashboard
+          </p>
         </div>
-        
-        {error && <div className="mb-6 text-rose-600 text-sm p-4 bg-rose-50 rounded-xl font-medium border border-rose-100">{error}</div>}
-        
-        <form onSubmit={handleSignup} className="space-y-5">
+
+        {error ? (
+          <div className="alert alert-error" style={{ marginBottom: 12 }}>
+            {error}
+          </div>
+        ) : null}
+
+        <form onSubmit={handleSignup} className="space-y-12">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
-            <input 
-              type="text" 
+            <label className="label">Full Name</label>
+            <input
+              type="text"
+              className="input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="block w-full px-4 py-3 bg-gray-50 border-gray-200 border rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-              required 
               placeholder="John Doe"
+              required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
-            <input 
-              type="email" 
+            <label className="label">Email Address</label>
+            <input
+              type="email"
+              className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full px-4 py-3 bg-gray-50 border-gray-200 border rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-              required 
               placeholder="you@example.com"
+              required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
-            <input 
-              type="password" 
+            <label className="label">Password</label>
+            <input
+              type="password"
+              className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full px-4 py-3 bg-gray-50 border-gray-200 border rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
-              required 
-              placeholder="••••••••"
+              placeholder="Enter password"
               minLength={6}
+              required
             />
           </div>
-          
-          <div className="pt-2">
-            <button 
-              disabled={loading}
-              type="submit" 
-              className="w-full bg-indigo-600 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-indigo-700 hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-            >
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </button>
-          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'Creating Account...' : 'Sign Up'}
+          </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-gray-500 font-medium">
+        <p style={{ marginTop: 14, fontSize: 13, color: 'var(--text-muted)' }}>
           Already have an account?{' '}
-          <Link href="/login" className="text-indigo-600 font-bold hover:text-indigo-500 transition-colors">
+          <Link href="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>
             Log In
           </Link>
         </p>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

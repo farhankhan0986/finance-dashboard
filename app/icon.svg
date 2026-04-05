@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Darker background -->
+  <rect width="64" height="64" rx="12" fill="#061E33"/>
+  
+  <!-- Chart bars -->
+  <rect x="14" y="34" width="6" height="16" fill="#E3F2FD"/>
+  <rect x="26" y="26" width="6" height="24" fill="#E3F2FD"/>
+  <rect x="38" y="18" width="6" height="32" fill="#E3F2FD"/>
+  
+  <!-- Upward trend line -->
+  <polyline points="14,34 29,26 41,18 50,12" 
+            fill="none" 
+            stroke="#29B6F6" 
+            stroke-width="3" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"/>
+</svg>
