@@ -1,12 +1,14 @@
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 import { successResponse, errorResponse } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const res = await pool.query('SELECT NOW()');
-    return successResponse({ db_time: res.rows[0].now }, 'API is healthy');
+    const { data, error } = await supabase.from('users').select('id').limit(1);
+    if (error) throw error;
+    
+    return successResponse({ db_connected: true, timestamp: new Date().toISOString() }, 'API is healthy');
   } catch (error) {
     return errorResponse('Database connection failed', 500, error.message);
   }

@@ -1,18 +1,24 @@
 import { successResponse, errorResponse } from '@/lib/api';
 import { withAuth } from '@/lib/guards';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 
 export const GET = withAuth(async (req, { params }) => {
   try {
     const { id } = await params;
-    const { rows } = await pool.query(
-      'SELECT id, amount, type, category, record_date, notes, created_by, created_at, updated_at FROM records WHERE id = $1',
-      [id]
-    );
-
-    if (rows.length === 0) return errorResponse('Record not found', 404);
     
-    return successResponse(rows[0]);
+    const { data: record, error } = await supabase
+      .from('records')
+      .select('id, amount, type, category, record_date, notes, created_by, created_at, updated_at')
+      .eq('id', id)
+      .single();
+
+    if (error || !record) return errorResponse('Record not found', 404);
+
+    if (req.user.role === 'viewer' && record.created_by !== req.user.userId) {
+      return errorResponse('Forbidden', 403);
+    }
+    
+    return successResponse(record);
   } catch (error) {
     return errorResponse('Internal server error', 500);
   }
@@ -23,68 +29,81 @@ export const PUT = withAuth(async (req, { params }) => {
     const { id } = await params;
     const body = await req.json();
     
-    const { rows: existing } = await pool.query('SELECT id FROM records WHERE id = $1', [id]);
-    if (existing.length === 0) return errorResponse('Record not found', 404);
+    const { data: existing } = await supabase
+      .from('records')
+      .select('id, created_by')
+      .eq('id', id)
+      .single();
 
-    const updates = [];
-    const values = [];
-    let idx = 1;
+    if (!existing) return errorResponse('Record not found', 404);
+
+    const updates = {};
 
     if (body.amount !== undefined) {
       if (isNaN(parseFloat(body.amount)) || parseFloat(body.amount) <= 0) return errorResponse('Invalid amount', 400);
-      updates.push(`amount = $${idx++}`);
-      values.push(parseFloat(body.amount));
+      updates.amount = parseFloat(body.amount);
     }
 
     if (body.type) {
       if (!['income', 'expense'].includes(body.type)) return errorResponse('Invalid type', 400);
-      updates.push(`type = $${idx++}`);
-      values.push(body.type);
+      updates.type = body.type;
     }
     
     if (body.category) {
-      updates.push(`category = $${idx++}`);
-      values.push(body.category);
+      updates.category = body.category;
     }
 
     if (body.record_date) {
-      updates.push(`record_date = $${idx++}`);
-      values.push(body.record_date);
+      updates.record_date = body.record_date;
     }
 
     if (body.notes !== undefined) {
-      updates.push(`notes = $${idx++}`);
-      values.push(body.notes);
+      updates.notes = body.notes;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       return errorResponse('No valid fields to update', 400);
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
+    updates.updated_at = new Date().toISOString();
 
-    const { rows } = await pool.query(
-      `UPDATE records SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, amount, type, category, record_date, notes`,
-      values
-    );
+    const { data: updatedRecord, error } = await supabase
+      .from('records')
+      .update(updates)
+      .eq('id', id)
+      .select('id, amount, type, category, record_date, notes')
+      .single();
 
-    return successResponse(rows[0], 'Record updated successfully');
+    if (error) throw error;
+
+    return successResponse(updatedRecord, 'Record updated successfully');
   } catch (error) {
     return errorResponse('Internal server error', 500);
   }
-}, ['admin', 'analyst']);
+}, ['admin']);
 
 export const DELETE = withAuth(async (req, { params }) => {
   try {
     const { id } = await params;
+
+    const { data: existing } = await supabase
+      .from('records')
+      .select('id, created_by')
+      .eq('id', id)
+      .single();
+
+    if (!existing) return errorResponse('Record not found', 404);
+
+    const { data, error } = await supabase
+      .from('records')
+      .delete()
+      .eq('id', id)
+      .select('id');
     
-    const { rows } = await pool.query('DELETE FROM records WHERE id = $1 RETURNING id', [id]);
-    
-    if (rows.length === 0) return errorResponse('Record not found', 404);
+    if (error || !data || data.length === 0) return errorResponse('Record not found', 404);
     
     return successResponse({ deletedId: id }, 'Record deleted successfully');
   } catch (error) {
     return errorResponse('Internal server error', 500);
   }
-}, ['admin', 'analyst']);
+}, ['admin']);

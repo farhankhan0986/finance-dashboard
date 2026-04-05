@@ -1,16 +1,21 @@
 import { successResponse, errorResponse } from '@/lib/api';
 import { withAuth } from '@/lib/guards';
 import { validateRequiredFields, isValidEmail } from '@/lib/validate';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export const GET = withAuth(async (req) => {
   try {
-    const { rows } = await pool.query(
-      'SELECT id, name, email, role, status, created_at, updated_at FROM users ORDER BY created_at DESC'
-    );
-    return successResponse(rows);
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, name, email, role, status, created_at, updated_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    return successResponse(users);
   } catch (error) {
+    console.error('List users error:', error);
     return errorResponse('Internal server error', 500);
   }
 }, ['admin']);
@@ -32,20 +37,33 @@ export const POST = withAuth(async (req) => {
       return errorResponse('Invalid role', 400);
     }
 
-    const { rows: existing } = await pool.query('SELECT id FROM users WHERE email = $1', [body.email.toLowerCase()]);
-    if (existing.length > 0) {
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', body.email.toLowerCase())
+      .single();
+
+    if (existing) {
       return errorResponse('Email already exists', 409);
     }
 
     const hash = await bcrypt.hash(body.password, 10);
     
-    const { rows } = await pool.query(
-      `INSERT INTO users (name, email, password_hash, role, status) 
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, status, created_at, updated_at`,
-      [body.name, body.email.toLowerCase(), hash, body.role, body.status || 'active']
-    );
+    const { data: newUser, error: insertError } = await supabase
+      .from('users')
+      .insert({
+        name: body.name,
+        email: body.email.toLowerCase(),
+        password_hash: hash,
+        role: body.role,
+        status: body.status || 'active'
+      })
+      .select('id, name, email, role, status, created_at, updated_at')
+      .single();
 
-    return successResponse(rows[0], 'User created successfully', 201);
+    if (insertError) throw insertError;
+
+    return successResponse(newUser, 'User created successfully', 201);
   } catch (error) {
     console.error('Create user error:', error);
     return errorResponse('Internal server error', 500);

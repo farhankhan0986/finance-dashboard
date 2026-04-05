@@ -1,7 +1,7 @@
 import { successResponse, errorResponse } from '@/lib/api';
 import { validateRequiredFields, isValidEmail } from '@/lib/validate';
 import { signToken } from '@/lib/auth';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
@@ -16,12 +16,16 @@ export async function POST(req) {
       return errorResponse('Invalid email format', 400);
     }
 
-    const { rows } = await pool.query(
-      'SELECT id, name, email, password_hash, role, status FROM users WHERE email = $1',
-      [body.email.toLowerCase()]
-    );
+    const { data: user, error: dbError } = await supabase
+      .from('users')
+      .select('id, name, email, password_hash, role, status')
+      .eq('email', body.email.toLowerCase())
+      .single();
 
-    const user = rows[0];
+    if (dbError && dbError.code !== 'PGRST116') { // PGRST116 is "No rows returned"
+      console.error('Database error:', dbError);
+      return errorResponse('Internal server error', 500);
+    }
 
     if (!user) {
       return errorResponse('Invalid email or password', 401);

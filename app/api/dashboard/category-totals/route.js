@@ -1,22 +1,23 @@
 import { successResponse, errorResponse } from '@/lib/api';
 import { withAuth } from '@/lib/guards';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 
-export const GET = withAuth(async () => {
+export const GET = withAuth(async (req) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT category, type, COALESCE(SUM(amount), 0) as total
-      FROM records
-      GROUP BY category, type
-      ORDER BY total DESC
-    `);
+    const { data: rows, error } = await supabase.rpc('get_category_totals', {
+      p_user_id: req.user.userId,
+      p_role: req.user.role
+    });
     
-    return successResponse(rows.map(row => ({
+    if (error) throw error;
+    
+    return successResponse((rows || []).map(row => ({
       category: row.category,
       type: row.type,
-      total: parseFloat(row.total)
+      total: parseFloat(row.total || 0)
     })));
   } catch (error) {
+    console.error('Category totals error:', error);
     return errorResponse('Internal server error', 500);
   }
 }, ['admin', 'analyst', 'viewer']);

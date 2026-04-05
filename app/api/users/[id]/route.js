@@ -1,65 +1,71 @@
 import { successResponse, errorResponse } from '@/lib/api';
 import { withAuth } from '@/lib/guards';
-import pool from '@/lib/db';
+import supabase from '@/lib/db';
 
 export const GET = withAuth(async (req, { params }) => {
   try {
     const { id } = await params;
-    const { rows } = await pool.query(
-      'SELECT id, name, email, role, status, created_at, updated_at FROM users WHERE id = $1',
-      [id]
-    );
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, name, email, role, status, created_at, updated_at')
+      .eq('id', id)
+      .single();
 
-    if (rows.length === 0) return errorResponse('User not found', 404);
+    if (error || !user) return errorResponse('User not found', 404);
     
-    return successResponse(rows[0]);
+    return successResponse(user);
   } catch (error) {
     return errorResponse('Internal server error', 500);
   }
 }, ['admin']);
 
-export const PUT = withAuth(async (req, { params }) => {
+export const PATCH = withAuth(async (req, { params }) => {
   try {
     const { id } = await params;
     const body = await req.json();
     
-    const { rows: existing } = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
-    if (existing.length === 0) return errorResponse('User not found', 404);
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', id)
+      .single();
 
-    const updates = [];
-    const values = [];
-    let idx = 1;
+    if (!existing) return errorResponse('User not found', 404);
+
+    const updates = {};
 
     if (body.role) {
       if (!['admin', 'analyst', 'viewer'].includes(body.role)) {
         return errorResponse('Invalid role', 400);
       }
-      updates.push(`role = $${idx++}`);
-      values.push(body.role);
+      updates.role = body.role;
     }
 
     if (body.status) {
       if (!['active', 'inactive'].includes(body.status)) {
         return errorResponse('Invalid status', 400);
       }
-      updates.push(`status = $${idx++}`);
-      values.push(body.status);
+      updates.status = body.status;
     }
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       return errorResponse('No valid fields to update', 400);
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    values.push(id);
+    updates.updated_at = new Date().toISOString();
 
-    const { rows } = await pool.query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, name, email, role, status`,
-      values
-    );
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', id)
+      .select('id, name, email, role, status')
+      .single();
 
-    return successResponse(rows[0], 'User updated successfully');
+    if (updateError) throw updateError;
+
+    return successResponse(updatedUser, 'User updated successfully');
   } catch (error) {
+    console.error('Update user error:', error);
     return errorResponse('Internal server error', 500);
   }
 }, ['admin']);
