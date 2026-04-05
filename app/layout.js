@@ -2,7 +2,7 @@ import './globals.css';
 
 export const metadata = {
   title: 'Finance Dashboard',
-  description: 'Assignment setup',
+  description: 'Track your income and expenses',
 };
 
 export default function RootLayout({ children }) {
